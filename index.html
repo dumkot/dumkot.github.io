@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Aplikasi Kontrol Manajemen Camat Dumai Kota</title>
+  <style>
+    :root {
+      --primary: #005bbb;
+      --secondary: #f3f6fb;
+      --text: #222;
+      --radius: 10px;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "Segoe UI", sans-serif;
+      background: var(--secondary);
+      color: var(--text);
+    }
+    header {
+      background: var(--primary);
+      color: white;
+      text-align: center;
+      padding: 1rem;
+      font-size: 1.2rem;
+      font-weight: bold;
+    }
+    nav {
+      display: flex;
+      justify-content: center;
+      gap: 1rem;
+      background: #eaf0fa;
+      padding: 0.7rem;
+    }
+    nav button {
+      background: var(--primary);
+      border: none;
+      color: white;
+      padding: 0.6rem 1rem;
+      border-radius: var(--radius);
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+    nav button:hover {
+      background: #004299;
+    }
+    main {
+      max-width: 900px;
+      margin: 1rem auto;
+      background: white;
+      border-radius: var(--radius);
+      padding: 1rem 1.5rem;
+      box-shadow: 0 0 10px rgba(0,0,0,0.05);
+    }
+    section { display: none; }
+    section.active { display: block; }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 1rem;
+    }
+    th, td {
+      border: 1px solid #ddd;
+      padding: 0.5rem;
+      text-align: left;
+    }
+    th { background: var(--secondary); }
+    form input, form textarea {
+      width: 100%;
+      padding: 0.5rem;
+      margin: 0.3rem 0 1rem 0;
+      border: 1px solid #ccc;
+      border-radius: var(--radius);
+    }
+    form button {
+      background: var(--primary);
+      color: white;
+      border: none;
+      padding: 0.5rem 1rem;
+      border-radius: var(--radius);
+      cursor: pointer;
+    }
+    .action-btn {
+      margin-right: 0.3rem;
+      padding: 0.3rem 0.6rem;
+      border: none;
+      border-radius: var(--radius);
+      cursor: pointer;
+    }
+    .edit { background: #ffc107; }
+    .delete { background: #dc3545; color: white; }
+  </style>
+</head>
+<body>
+  <header>Aplikasi Kontrol Manajemen Camat Dumai Kota</header>
+  <nav>
+    <button data-page="disposisi">Disposisi</button>
+    <button data-page="nota">Nota Dinas</button>
+    <button data-page="tugas">Surat Tugas</button>
+    <button data-page="agenda">Agenda Harian</button>
+  </nav>
+
+  <main>
+    <!-- DISPOSISI -->
+    <section id="disposisi" class="active">
+      <h2>Disposisi</h2>
+      <form id="formDisposisi">
+        <input type="hidden" id="disposisiIndex" />
+        <input type="text" id="disposisiKepada" placeholder="Kepada" required />
+        <textarea id="disposisiIsi" placeholder="Isi disposisi" required></textarea>
+        <button type="submit">Simpan</button>
+      </form>
+      <table>
+        <thead>
+          <tr><th>Kepada</th><th>Isi</th><th>Aksi</th></tr>
+        </thead>
+        <tbody id="disposisiList"></tbody>
+      </table>
+    </section>
+
+    <!-- NOTA DINAS -->
+    <section id="nota">
+      <h2>Nota Dinas</h2>
+      <form id="formNota">
+        <input type="hidden" id="notaIndex" />
+        <input type="text" id="notaKepada" placeholder="Kepada" required />
+        <textarea id="notaIsi" placeholder="Isi nota dinas" required></textarea>
+        <button type="submit">Simpan</button>
+      </form>
+      <table>
+        <thead><tr><th>Kepada</th><th>Isi</th><th>Aksi</th></tr></thead>
+        <tbody id="notaList"></tbody>
+      </table>
+    </section>
+
+    <!-- SURAT TUGAS -->
+    <section id="tugas">
+      <h2>Surat Tugas</h2>
+      <form id="formTugas">
+        <input type="hidden" id="tugasIndex" />
+        <input type="text" id="tugasNama" placeholder="Nama Pejabat" required />
+        <input type="text" id="tugasKegiatan" placeholder="Kegiatan" required />
+        <button type="submit">Simpan</button>
+      </form>
+      <table>
+        <thead><tr><th>Nama</th><th>Kegiatan</th><th>Aksi</th></tr></thead>
+        <tbody id="tugasList"></tbody>
+      </table>
+    </section>
+
+    <!-- AGENDA HARIAN -->
+    <section id="agenda">
+      <h2>Agenda Harian</h2>
+      <form id="formAgenda">
+        <input type="hidden" id="agendaIndex" />
+        <input type="date" id="agendaTanggal" required />
+        <input type="time" id="agendaJam" required />
+        <input type="text" id="agendaJudul" placeholder="Judul Acara" required />
+        <input type="text" id="agendaLokasi" placeholder="Lokasi" required />
+        <input type="text" id="agendaPejabat" placeholder="Pejabat yang Hadir" required />
+        <button type="submit">Simpan</button>
+      </form>
+      <table>
+        <thead>
+          <tr><th>Tanggal</th><th>Jam</th><th>Judul</th><th>Lokasi</th><th>Pejabat</th><th>Aksi</th></tr>
+        </thead>
+        <tbody id="agendaList"></tbody>
+      </table>
+    </section>
+  </main>
+
+  <script>
+    // === ROUTING ===
+    document.querySelectorAll("nav button").forEach(btn => {
+      btn.addEventListener("click", () => {
+        document.querySelectorAll("main section").forEach(sec => sec.classList.remove("active"));
+        document.getElementById(btn.dataset.page).classList.add("active");
+      });
+    });
+
+    // === LOCAL STORAGE HELPERS ===
+    const save = (key, val) => localStorage.setItem(key, JSON.stringify(val));
+    const load = key => JSON.parse(localStorage.getItem(key) || "[]");
+
+    // === GENERIC RENDERER ===
+    const render = (key, tbodyId, cols, editFn, delFn) => {
+      const data = load(key);
+      const tbody = document.getElementById(tbodyId);
+      tbody.innerHTML = data.map((row, i) =>
+        `<tr>${cols.map(c => `<td>${row[c]}</td>`).join("")}
+          <td>
+            <button class='action-btn edit' onclick='${editFn}(${i})'>✎</button>
+            <button class='action-btn delete' onclick='${delFn}(${i})'>🗑</button>
+          </td>
+        </tr>`).join("");
+    };
+
+    // === DISPOSISI ===
+    function renderDisposisi(){render("disposisi","disposisiList",["kepada","isi"],"editDisposisi","delDisposisi");}
+    function editDisposisi(i){
+      const d = load("disposisi")[i];
+      disposisiIndex.value=i; disposisiKepada.value=d.kepada; disposisiIsi.value=d.isi;
+    }
+    function delDisposisi(i){const d=load("disposisi");d.splice(i,1);save("disposisi",d);renderDisposisi();}
+    formDisposisi.onsubmit=e=>{
+      e.preventDefault();
+      const d=load("disposisi");
+      const obj={kepada:disposisiKepada.value,isi:disposisiIsi.value};
+      const idx=disposisiIndex.value;
+      if(idx) d[idx]=obj; else d.push(obj);
+      save("disposisi",d);
+      formDisposisi.reset(); disposisiIndex.value="";
+      renderDisposisi();
+    };
+    renderDisposisi();
+
+    // === NOTA ===
+    function renderNota(){render("nota","notaList",["kepada","isi"],"editNota","delNota");}
+    function editNota(i){const d=load("nota")[i];notaIndex.value=i;notaKepada.value=d.kepada;notaIsi.value=d.isi;}
+    function delNota(i){const d=load("nota");d.splice(i,1);save("nota",d);renderNota();}
+    formNota.onsubmit=e=>{
+      e.preventDefault();
+      const d=load("nota");
+      const obj={kepada:notaKepada.value,isi:notaIsi.value};
+      const idx=notaIndex.value;
+      if(idx) d[idx]=obj; else d.push(obj);
+      save("nota",d);
+      formNota.reset(); notaIndex.value="";
+      renderNota();
+    };
+    renderNota();
+
+    // === SURAT TUGAS ===
+    function renderTugas(){render("tugas","tugasList",["nama","kegiatan"],"editTugas","delTugas");}
+    function editTugas(i){const d=load("tugas")[i];tugasIndex.value=i;tugasNama.value=d.nama;tugasKegiatan.value=d.kegiatan;}
+    function delTugas(i){const d=load("tugas");d.splice(i,1);save("tugas",d);renderTugas();}
+    formTugas.onsubmit=e=>{
+      e.preventDefault();
+      const d=load("tugas");
+      const obj={nama:tugasNama.value,kegiatan:tugasKegiatan.value};
+      const idx=tugasIndex.value;
+      if(idx) d[idx]=obj; else d.push(obj);
+      save("tugas",d);
+      formTugas.reset(); tugasIndex.value="";
+      renderTugas();
+    };
+    renderTugas();
+
+    // === AGENDA ===
+    function renderAgenda(){render("agenda","agendaList",["tanggal","jam","judul","lokasi","pejabat"],"editAgenda","delAgenda");}
+    function editAgenda(i){
+      const d=load("agenda")[i];
+      agendaIndex.value=i;
+      agendaTanggal.value=d.tanggal;
+      agendaJam.value=d.jam;
+      agendaJudul.value=d.judul;
+      agendaLokasi.value=d.lokasi;
+      agendaPejabat.value=d.pejabat;
+    }
+    function delAgenda(i){const d=load("agenda");d.splice(i,1);save("agenda",d);renderAgenda();}
+    formAgenda.onsubmit=e=>{
+      e.preventDefault();
+      const d=load("agenda");
+      const obj={
+        tanggal:agendaTanggal.value,
+        jam:agendaJam.value,
+        judul:agendaJudul.value,
+        lokasi:agendaLokasi.value,
+        pejabat:agendaPejabat.value
+      };
+      const idx=agendaIndex.value;
+      if(idx) d[idx]=obj; else d.push(obj);
+      save("agenda",d);
+      formAgenda.reset(); agendaIndex.value="";
+      renderAgenda();
+    };
+    renderAgenda();
+  </script>
+</body>
+</html>
